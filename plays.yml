@@ -1,0 +1,26 @@
+---
+- hosts: all
+  gather_facts: False
+
+  tasks:
+    - name: ilo restart
+      local_action:
+        module: restart_server_module
+        url: '{{ hpilo_firmware_address }}'
+        dia_ilo_ip: '{{ hpilo_ip_address }}'
+        dia_ilo_user: '{{ hpilo_admin_user }}'
+        dia_ilo_pass: '{{ hpilo_admin_pass }}'
+      tags:
+        - restart_ilo
+
+    - name: ilo update firmware
+      local_action:
+        module: update_firmware_module
+        action: InstallFromURI
+        url: '{{ hpilo_firmware_address }}'
+        dia_ilo_ip: '{{ hpilo_ip_address }}'
+        dia_ilo_user: '{{ hpilo_admin_user }}'
+        dia_ilo_pass: '{{ hpilo_admin_pass }}'
+        flag: True
+      tags:
+        - update_ilo

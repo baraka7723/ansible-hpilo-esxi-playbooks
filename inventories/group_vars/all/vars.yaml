@@ -1,0 +1,11 @@
+---
+ansible_user: user
+ansible_ssh_pass: '{{ vault_ansible_ssh_pass }}'
+ansible_become_pass: '{{ vault_ansible_ssh_pass }}'
+
+hpilo_admin_user: ADMIN
+hpilo_admin_pass: '{{ vault_hpilo_admin_pass }}'
+
+# plain text vault testing
+#vault_ansible_ssh_pass: ''
+#vault_hpilo_admin_pass: ''
