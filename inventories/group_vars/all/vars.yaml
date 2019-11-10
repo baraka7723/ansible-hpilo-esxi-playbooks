@@ -9,3 +9,8 @@ hpilo_admin_pass: '{{ vault_hpilo_admin_pass }}'
 # plain text vault testing
 #vault_ansible_ssh_pass: ''
 #vault_hpilo_admin_pass: ''
+
+# iso host server
+iso_host: 10.10.10.67
+iso_path: /var/www/html/iso
+iso_source: /opt/esxi/source

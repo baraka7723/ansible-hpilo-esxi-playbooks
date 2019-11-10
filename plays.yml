@@ -3,6 +3,10 @@
   gather_facts: False
 
   tasks:
+    - name: only run playbook using tag
+      fail:
+        msg: "Run playbook using tag! Check available tags using --list-tags option."
+
     - name: ilo restart
       local_action:
         module: restart_server_module
@@ -24,3 +28,40 @@
         flag: True
       tags:
         - update_ilo
+
+    - name: copy esxi source to temporary directory
+      delegate_to: '{{ iso_host }}'
+      shell: |
+        rsync -aP {{ iso_source }}/{{ esxi_version }} /tmp/{{ inventory_hostname }}
+        find /tmp/{{ inventory_hostname }} -type d -exec chmod 0755 {} +
+        find /tmp/{{ inventory_hostname }} -type f -exec chmod 0644 {} +
+      tags:
+        - install_esxi
+
+    - name: copy kickstart file to esxi iso source
+      delegate_to: '{{ iso_host }}'
+      template:
+        src: kickstart.cfg.j2
+        dest: /tmp/{{ inventory_hostname }}/KS.CFG
+      tags:
+        - install_esxi
+
+    - name: add kickstart option to esxi boot config
+      delegate_to: '{{ iso_host }}'
+      replace:
+        path: /tmp/{{ inventory_hostname }}/BOOT.CFG
+        regexp: '^kernelopt(.+)runweasel'
+        replace: 'kernelopt\1runweasel ks=cdrom:/KS.CFG'
+      tags:
+        - install_esxi
+
+    - name: build esxi iso with kickstart
+      delegate_to: '{{ iso_host }}'
+      shell: |
+        mkisofs -relaxed-filenames -J -R \
+          -o {{ iso_path }}/{{ iso_name }}_{{ inventory_hostname }}.iso \
+          -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 \
+          -boot-info-table -eltorito-alt-boot -eltorito-platform efi \
+          -b efiboot.img -no-emul-boot /tmp/{{ inventory_hostname }}
+      tags:
+        - install_esxi
